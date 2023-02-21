@@ -1,0 +1,8 @@
+src/debugOutput
+node_modules
+version-*
+debug
+yarn-error.log
+dist
+.idea/sonarlint
+
