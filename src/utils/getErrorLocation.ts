@@ -1,4 +1,4 @@
-export const getErLoc = (): {
+export const getErrorLocation = (): {
   line: number
   stack: Error['stack']
 } => {

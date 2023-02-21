@@ -1,4 +1,4 @@
-export const getTmsp = () => {
+export const getTimestamp = () => {
   return new Date()
     .toLocaleString('en-GB', {
       timeZone: 'Europe/Paris',

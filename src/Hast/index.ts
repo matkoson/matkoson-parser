@@ -22,8 +22,8 @@ import { ParseEnglish } from 'parse-english'
 import type { Paragraph, Root as NlcstRoot, Text } from 'nlcst'
 import type { Node } from 'unist'
 
-import { getTmsp } from '../utils/getTmsp.js'
-import { getErLoc } from '../utils/getErLoc.js'
+import { getTimestamp } from '../utils/getTimestamp.js'
+import { getErrorLocation } from '../utils/getErrorLocation.js'
 
 import NlcstParser, { TextStructure } from './nlcst/index.js'
 
@@ -96,7 +96,7 @@ class Hast {
     stack: Error['stack']
     line: number
   }) => {
-    const timestamp = getTmsp()
+    const timestamp = getTimestamp()
     // fs.writeFileSync(`../debugOutput/debug.json`, this.inspect(this.tree))
     return new Error(
       `[🌳 HAST]: at line ${error.line}: ${error.message}, ${
@@ -113,8 +113,8 @@ class Hast {
       if (!element) {
         throw this.createHastError({
           message: `No element found with selector: ${selector}`,
-          stack: getErLoc().stack,
-          line: getErLoc().line,
+          stack: getErrorLocation().stack,
+          line: getErrorLocation().line,
         })
       }
       return element
@@ -126,8 +126,8 @@ class Hast {
       if (!elements) {
         throw this.createHastError({
           message: `No element found with selector: ${selector}`,
-          stack: getErLoc().stack,
-          line: getErLoc().line,
+          stack: getErrorLocation().stack,
+          line: getErrorLocation().line,
         })
       }
 
