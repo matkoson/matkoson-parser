@@ -33,7 +33,7 @@ import {
 
 import NlcstParser, { TextStructure } from './nlcst/index.js'
 
-class Hast {
+class SyntaxTree {
   private tree: Root
   private inspect = inspect
   private classnames = classnames
@@ -490,4 +490,4 @@ const todo: TodoPreview
   }
 }
 
-export default Hast
+export default SyntaxTree

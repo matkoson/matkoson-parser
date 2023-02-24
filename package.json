@@ -17,11 +17,13 @@
     }
   },
   "scripts": {
+    "release": "release-it",
+    "release:test": "release-it --dry-run --verbose",
     "typecheck": "tsc --noEmit -w",
     "typecheck:once": "tsc --noEmit",
     "lint": "eslint --ext .ts src/ --fix",
     "build": "rollup -c rollup.config.mjs --watch",
-    "ts": "TIMESTAMP=\"[$(date +'%d-%m-%Y: %H:%M:%S')]\" && rm ./version* && touch \"./version-$TIMESTAMP.txt\" && touch \"dist\/version-$TIMESTAMP.txt\" && echo \"[▼  VERSION]: '@matkoson/parser': v.$TIMESTAMP\"",
+    "ts": "TIMESTAMP=\"[$(date +'%d-%m-%Y: %H:%M:%S')]\" && rm ./version* && touch \"./version-$TIMESTAMP.txt\" && touch \"dist/version-$TIMESTAMP.txt\" && echo \"[▼  VERSION]: '@matkoson/parser': v.$TIMESTAMP\"",
     "build:once": "rimraf dist && rollup -c rollup.config.mjs > \"./debug/build-once.txt\" && yarn ts",
     "build:with-timestamp": "yarn build:once",
     "postinstall_DISABLED": "patch-package",
@@ -74,6 +76,7 @@
     "patch-package": "^6.5.1",
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.8.4",
+    "release-it": "^15.6.0",
     "rimraf": "^4.1.2",
     "rollup": "^3.17.1",
     "rollup-plugin-dts": "^5.2.0",
