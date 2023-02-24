@@ -25,7 +25,7 @@
     "build:once": "rimraf dist && rollup -c rollup.config.mjs > \"./debug/build-once.txt\" && yarn ts",
     "build:with-timestamp": "yarn build:once",
     "postinstall_DISABLED": "patch-package",
-    "dp": "yarn build:once && nodemon --enable-source-maps dp.js --ignore ./html",
+    "dp": "yarn build:once && nodemon --enable-source-maps src/debug.js --ignore ./html",
     "dpo": "yarn build:once && node --enable-source-maps dp.js",
     "dpf": "yarn dp > debug/dp-output.txt"
   },

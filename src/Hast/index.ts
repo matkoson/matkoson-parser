@@ -24,27 +24,14 @@ import type { Node } from 'unist'
 
 import { getTimestamp } from '../utils/getTimestamp.js'
 import { getErrorLocation } from '../utils/getErrorLocation.js'
+import {
+  ElementWithProperties,
+  GetElementsWithProperties,
+  LogOptions,
+  TagNameOptions,
+} from '../types.js'
 
 import NlcstParser, { TextStructure } from './nlcst/index.js'
-
-export type ElementWithProperties = Element & {
-  properties: { [key: string]: any }
-}
-
-export type LogOption =
-  | 'defaultTree'
-  | 'nlcstTree'
-  | 'elementsWithClassNames'
-  | 'elementsWithProperties'
-  | 'textStructure'
-  | 'nlcstTreeRaw'
-  | 'defaultTreeRaw'
-  | 'allDivs'
-  | 'rawHtml'
-
-type TagName = 'i' | 'div' | 'img' | 'a' | 'span'
-
-type GetElementsWithProperties = TagName | TagName[] | null
 
 class Hast {
   private tree: Root
@@ -57,6 +44,7 @@ class Hast {
   static toMarkdown = toMarkdown
   static flatFilter = flatFilter
   rawHtml: string
+  htmlTree: Root
   defaultTree: Root
   defaultTreeRaw: Root
   nlcstTree: NlcstRoot
@@ -68,8 +56,10 @@ class Hast {
   constructor(html: string) {
     this.rawHtml = html
     this.tree = fromHtml(html)
+    this.htmlTree = this.tree
     console.info("[🥽  PARSER]: 'fromHtml' parsed the HTML.")
     this.defaultTree = this.makeDefaultTree(this.tree, true)
+    this.tree = this.defaultTree
     // console.info("[🥽  PARSER]: 'fromHtml' parsed the HTML.")
     this.defaultTreeRaw = this.makeDefaultTree(this.tree, false)
     // console.info("[🥽  PARSER]: 'makeDefaultTree' made the default tree raw.")
@@ -267,10 +257,53 @@ const todo: TodoPreview
       let noWhitespaceTree: Root | null = recursiveReduceTree(tree, (node) => {
         if (node.type === 'text') {
           const text = node as Text
-          text.value = text.value.replace(/\s/g, '')
+          const newNodes: Node[] = []
+          let start = 0
+          let end = 0
+          let inTag = false
+          for (let i = 0; i <= text.value.length; i++) {
+            const char = text.value.charAt(i)
+            if (char === '<') {
+              inTag = true
+            } else if (char === '>') {
+              inTag = false
+            } else if (!inTag && (char === ' ' || i === text.value.length)) {
+              if (start !== end) {
+                const spanNode = {
+                  type: 'element',
+                  tagName: 'span',
+                  properties: {},
+                  children: [
+                    {
+                      type: 'text',
+                      value: text.value.slice(start, end),
+                    },
+                  ],
+                }
+                newNodes.push(spanNode)
+              }
+              start = end + 1
+            }
+            end++
+          }
+          text.value = ''
+          newNodes.forEach((node) => {
+            if (node.type === 'element') {
+              const element = node as Element
+              if (element.children) {
+                element.children.forEach((child) => {
+                  if (child.type === 'text') {
+                    text.value += child.value
+                  }
+                })
+              }
+            }
+          })
+          return newNodes
         }
         return node
       })
+
       noWhitespaceTree = removeNodesOfType(noWhitespaceTree, (node) => {
         if (node.type === 'text') {
           const textNode = node as Text
@@ -357,22 +390,24 @@ const todo: TodoPreview
       rawHtml: () => {
         return console.log(this.rawHtml)
       },
-      nlcst: () => {
-        return inspect(this.nlcstTree)
+      nlcstTree: () => {
+        return console.log(inspect(this.nlcstTree))
       },
-      nlcstRaw: () => {
-        return inspect(this.nlcstTreeRaw)
+      nlcstTreeRaw: () => {
+        return console.log(inspect(this.nlcstTreeRaw))
       },
       defaultTree: () => {
-        return inspect(this.defaultTree)
+        return console.log(inspect(this.defaultTree))
       },
       defaultTreeRaw: () => {
-        return inspect(this.defaultTreeRaw)
+        return console.log(inspect(this.defaultTreeRaw))
       },
       elementsWithClassNames: () => {
-        return this.getElementsWithClassNames(root)
+        return console.log(this.getElementsWithClassNames(root))
       },
-      elementsWithProperties: (tagName?: TagName | TagName[] | null) => {
+      elementsWithProperties: (
+        tagName?: TagNameOptions | TagNameOptions[] | null
+      ) => {
         return this._getElementsWithProperties({ tagName, root })
       },
       textStructure: () => {
@@ -412,26 +447,26 @@ const todo: TodoPreview
       },
     }
   }
-  public print = (logOption: LogOption, args?: unknown) => {
+  public print = (logOption: LogOptions, args?: unknown) => {
     if (!this.tree) {
       throw new Error('No tree found')
     }
 
     switch (logOption) {
       case 'rawHtml':
-        console.log(this.inspectTree().rawHtml)
+        console.log(this.inspectTree().rawHtml())
         break
       case 'defaultTree':
-        console.log(this.inspectTree().defaultTree)
+        console.log(this.inspectTree().defaultTree())
         break
       case 'defaultTreeRaw':
-        console.log(this.inspectTree().defaultTreeRaw)
+        console.log(this.inspectTree().defaultTreeRaw())
         break
       case 'nlcstTree':
-        console.log(this.inspectTree().nlcst)
+        this.inspectTree().nlcstTree()
         break
       case 'nlcstTreeRaw':
-        console.log(this.inspectTree().nlcstRaw)
+        console.log(this.inspectTree().nlcstTreeRaw())
         break
       case 'elementsWithClassNames':
         console.log(this.inspectTree().elementsWithClassNames)
