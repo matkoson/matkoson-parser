@@ -29,7 +29,8 @@
     "postinstall_DISABLED": "patch-package",
     "dp": "yarn build:once && nodemon --enable-source-maps src/debug.js --ignore ./html",
     "dpo": "yarn build:once && node --enable-source-maps dp.js",
-    "dpf": "yarn dp > debug/dp-output.txt"
+    "dpf": "yarn dp > debug/dp-output.txt",
+    "parse": "yarn build:once && nodemon --enable-source-maps ./cli/parseHtml.js"
   },
   "peerDependencies": {
     "hast-util-classnames": "^2.0.1",
