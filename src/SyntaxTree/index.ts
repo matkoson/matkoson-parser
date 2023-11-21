@@ -22,7 +22,7 @@ import { ParseEnglish } from 'parse-english'
 import type { Paragraph, Root as NlcstRoot, Text } from 'nlcst'
 import type { Node } from 'unist'
 
-import { getTimestamp } from '../utils/getTimestamp.js'
+// import { getTimestamp } from '../utils/getTimestamp.js'
 import { getErrorLocation } from '../utils/getErrorLocation.js'
 import {
   ElementWithProperties,
@@ -31,9 +31,9 @@ import {
   TagNameOptions,
 } from '../types.js'
 
-import NlcstParser, { TextStructure } from './nlcst/index.js'
+import Nlcst, { TextStructure } from './nlcst/index.js'
 
-class SyntaxTree {
+class Parser {
   private tree: Root
   private inspect = inspect
   private classnames = classnames
@@ -57,28 +57,17 @@ class SyntaxTree {
     this.rawHtml = html
     this.tree = fromHtml(html)
     this.htmlTree = this.tree
-    console.info("[🥽  PARSER]: 'fromHtml' parsed the HTML.")
     this.defaultTree = this.makeDefaultTree(this.tree, true)
     this.tree = this.defaultTree
-    // console.info("[🥽  PARSER]: 'fromHtml' parsed the HTML.")
     this.defaultTreeRaw = this.makeDefaultTree(this.tree, false)
-    // console.info("[🥽  PARSER]: 'makeDefaultTree' made the default tree raw.")
     this.nlcstTree = this.makeNlcstTree(this.tree, true)
-    // console.info("[🥽  PARSER]: 'makeNlcstTree' made the nlcst tree.")
     this.nlcstTreeRaw = this.makeNlcstTree(this.tree, false)
-    // console.info("[🥽  PARSER]: 'makeNlcstTree' made the nlcst tree raw.")
     this.treeProperties = this.extractElementsWithProperties(
       this.defaultTreeRaw
     )
-    // console.info(
-    // "[🥽  PARSER]: 'extractElementsWithProperties' extracted the elements with properties."
-    // )
     this.treeClassNames = this.extractElementsWithClassNames(
       this.defaultTreeRaw
     )
-    // console.info(
-    //   "[🥽  PARSER]: 'extractElementsWithClassNames' extracted the elements with class names."
-    // )
   }
 
   private createHastError = (error: {
@@ -86,8 +75,6 @@ class SyntaxTree {
     stack: Error['stack']
     line: number
   }) => {
-    const timestamp = getTimestamp()
-    // fs.writeFileSync(`../debugOutput/debug.json`, this.inspect(this.tree))
     return new Error(
       `[🌳 HAST]: at line ${error.line}: ${error.message}, ${
         error.stack
@@ -169,7 +156,7 @@ class SyntaxTree {
     return paragraphNodes
   }
 
-  getFullStructure = (): TextStructure => {
+  public getFullStructure = (): TextStructure => {
     if (this.textStructure) {
       return JSON.parse(this.textStructure)
     }
@@ -177,7 +164,7 @@ class SyntaxTree {
 
     return textStructure
   }
-  getTextStructure = (): TextStructure['structure'] => {
+  public getTextStructure = (): TextStructure['structure'] => {
     if (this.textStructure) {
       return JSON.parse(this.textStructure)
         .structure as TextStructure['structure']
@@ -186,31 +173,13 @@ class SyntaxTree {
 
     return textStructure.structure
   }
-  /* Pick<Type, Keys>
 
-interface Todo {
-  title: string;
-  description: string;
-  completed: boolean;
-}
-
-type TodoPreview = Pick<Todo, "title" | "completed">;
-
-const todo: TodoPreview = {
-  title: "Clean room",
-  completed: false,
-};
-
-todo;
-
-const todo: TodoPreview
-*/
   private _getTextStructure = (): TextStructure => {
     if (this.textStructure) {
       return JSON.parse(this.textStructure)
     }
     const paragraphNodes = this.getParagraphNodes()
-    const nlcstParser = new NlcstParser()
+    const nlcstParser = new Nlcst()
 
     const [paragraphs, sentences, words, texts] =
       nlcstParser.parse(paragraphNodes)
@@ -261,13 +230,16 @@ const todo: TodoPreview
           let start = 0
           let end = 0
           let inTag = false
-          for (let i = 0; i <= text.value.length; i++) {
-            const char = text.value.charAt(i)
+          for (let index = 0; index <= text.value.length; index++) {
+            const char = text.value.charAt(index)
             if (char === '<') {
               inTag = true
             } else if (char === '>') {
               inTag = false
-            } else if (!inTag && (char === ' ' || i === text.value.length)) {
+            } else if (
+              !inTag &&
+              (char === ' ' || index === text.value.length)
+            ) {
               if (start !== end) {
                 const spanNode = {
                   type: 'element',
@@ -447,6 +419,7 @@ const todo: TodoPreview
       },
     }
   }
+
   public print = (logOption: LogOptions, args?: unknown) => {
     if (!this.tree) {
       throw new Error('No tree found')
@@ -490,4 +463,4 @@ const todo: TodoPreview
   }
 }
 
-export default SyntaxTree
+export default Parser

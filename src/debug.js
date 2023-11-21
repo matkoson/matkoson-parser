@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import FutbinStatsParser from "../dist/esm/index.js";
+import Parser from "../dist/esm/index.js";
 // @ts-ignore
 import html from "../debug/html/validRow.json" assert { type: "json" };
 
@@ -26,7 +26,7 @@ async function debug() {
   const playerName = "Mehdi Taremi";
   const rating = "81";
 
-  const futbinStatsParser = new FutbinStatsParser(
+  const futbinStatsParser = new Parser(
     html,
     playerName,
     rating
